@@ -1,0 +1,17 @@
+# Birds CUB dataset
+birds_images_path: 'data/cvpr2016_cub/images/'
+birds_embedding_path: 'data/cub_icml/'
+birds_text_path: 'data/cvpr2016_cub/cvpr2016_cub/text_c10/'
+birds_dataset_path: 'data/cvpr2016_cub/text2image/birds.hdf5'
+val_split_path: 'data/cvpr2016_cub/valclasses.txt'
+train_split_path: 'data/cvpr2016_cub/trainclasses.txt'
+test_split_path: 'data/cvpr2016_cub/testclasses.txt'
+
+# flowers dataset
+flowers_images_path: 'data/cvpr2016_flowers/images/'
+flowers_embedding_path: 'data/flowers_icml/'
+flowers_text_path: 'data/cvpr2016_flowers/text_c10/'
+flowers_dataset_path: 'data/cvpr2016_flowers/text2image/flowers.hdf5'
+flowers_val_split_path: 'data/cvpr2016_flowers/valclasses.txt'
+flowers_train_split_path: 'data/cvpr2016_flowers/trainclasses.txt'
+flowers_test_split_path: 'data/cvpr2016_flowers/testclasses.txt'
