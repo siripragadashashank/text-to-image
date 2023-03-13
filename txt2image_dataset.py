@@ -6,9 +6,6 @@ import numpy as np
 import pdb
 from PIL import Image
 import torch
-from torch.autograd import Variable
-import pdb
-import torch.nn.functional as F
 
 
 class Text2ImageDataset(Dataset):

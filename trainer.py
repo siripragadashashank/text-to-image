@@ -11,8 +11,8 @@ import os
 from models import gan
 
 
-class Trainer(object):
-    def __init__(self, dataset, split, vis_screen, save_path):
+class VanillaGANTrainer(object):
+    def __init__(self, dataset, split, vis_screen, save_path, pre_trained_gen, pre_trained_disc):
         with open('config.yaml', 'r') as f:
             config = yaml.safe_load(f)
 
@@ -28,8 +28,15 @@ class Trainer(object):
         self.generator = gan.generator().cuda()
         self.discriminator = gan.discriminator().cuda()
 
-        self.discriminator.apply(Utils.weights_init)
-        self.generator.apply(Utils.weights_init)
+        if pre_trained_disc:
+            self.discriminator.load_state_dict(torch.load(pre_trained_disc))
+        else:
+            self.discriminator.apply(Utils.weights_init)
+
+        if pre_trained_gen:
+            self.generator.load_state_dict(torch.load(pre_trained_gen))
+        else:
+            self.generator.apply(Utils.weights_init)
 
         if dataset == 'birds':
             self.dataset = Text2ImageDataset(config['birds_dataset_path'], split=split)
@@ -111,24 +118,22 @@ class Trainer(object):
             self.logger.plot_epoch_w_scores(iteration)
 
             if epoch % 50 == 0:
-                Utils.save_checkpoint(self.discriminator, self.generator, self.checkpoints_path, epoch)
+                Utils.save_checkpoint(self.discriminator, self.generator, self.checkpoints_path, self.save_path, epoch)
 
     def predict(self):
         for sample in self.data_loader:
             right_images = sample['right_images']
-            right_embed = sample['right_embed']
             txt = sample['txt']
 
             if not os.path.exists('results/{0}'.format(self.save_path)):
                 os.makedirs('results/{0}'.format(self.save_path))
 
             right_images = Variable(right_images.float()).cuda()
-            right_embed = Variable(right_embed.float()).cuda()
 
             # Train the generator
             noise = Variable(torch.randn(right_images.size(0), 100)).cuda()
             noise = noise.view(noise.size(0), 100, 1, 1)
-            fake_images = self.generator(right_embed, noise)
+            fake_images = self.generator(noise)
 
             self.logger.draw(right_images, fake_images)
 

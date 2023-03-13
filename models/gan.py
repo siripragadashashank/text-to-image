@@ -1,7 +1,5 @@
-import torch
 import torch.nn as nn
-from torch.autograd import Variable
-import numpy as np
+
 
 class generator(nn.Module):
 	def __init__(self):
@@ -25,7 +23,7 @@ class generator(nn.Module):
 			nn.BatchNorm2d(self.ngf * 2),
 			nn.ReLU(True),
 			# state size. (ngf*2) x 16 x 16
-			nn.ConvTranspose2d(self.ngf * 2,self.ngf, 4, 2, 1, bias=False),
+			nn.ConvTranspose2d(self.ngf * 2, self.ngf, 4, 2, 1, bias=False),
 			nn.BatchNorm2d(self.ngf),
 			nn.ReLU(True),
 			# state size. (ngf) x 32 x 32
@@ -44,9 +42,6 @@ class discriminator(nn.Module):
 		self.image_size = 64
 		self.num_channels = 3
 		self.ndf = 64
-
-		self.B_dim = 128
-		self.C_dim = 16
 
 		self.netD_1 = nn.Sequential(
 			# input is (nc) x 64 x 64
