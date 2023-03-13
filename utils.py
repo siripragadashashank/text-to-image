@@ -58,7 +58,6 @@ class Utils(object):
         return tensor + offset
 
     @staticmethod
-
     # based on:  https://github.com/caogang/wgan-gp/blob/master/gan_cifar10.py
     def compute_GP(netD, real_data, real_embed, fake_data, LAMBDA):
         BATCH_SIZE = real_data.size(0)
@@ -84,7 +83,7 @@ class Utils(object):
 
     @staticmethod
     def save_checkpoint(netD, netG, dir_path, subdir_path, epoch):
-        path =  os.path.join(dir_path, subdir_path)
+        path = os.path.join(dir_path, subdir_path)
         if not os.path.exists(path):
             os.makedirs(path)
 

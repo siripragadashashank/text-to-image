@@ -10,6 +10,7 @@ from torch.autograd import Variable
 import pdb
 import torch.nn.functional as F
 
+
 class Text2ImageDataset(Dataset):
 
     def __init__(self, datasetFile, transform=None, split=0):
