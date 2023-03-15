@@ -5,3 +5,5 @@ images/
 __pycache__
 results/gan/generated_images/
 results/gan_cls/generated_images/
+results/gan_cls/generated_*
+results/gan/generated*

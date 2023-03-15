@@ -120,7 +120,7 @@ class Logger(object):
     def plot_epoch(self, epoch):
         self.viz.plot('Discriminator', 'train', epoch, np.array(self.hist_D).mean())
         self.viz.plot('Generator', 'train', epoch, np.array(self.hist_G).mean())
-        self.hist_D = []
+        self.hist_D = [] 
         self.hist_G = []
 
     def plot_epoch_w_scores(self, epoch):
