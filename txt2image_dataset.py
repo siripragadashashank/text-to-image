@@ -6,6 +6,7 @@ import numpy as np
 import pdb
 from PIL import Image
 import torch
+from transformers import BertTokenizer, BertModel
 
 
 class Text2ImageDataset(Dataset):
@@ -17,6 +18,8 @@ class Text2ImageDataset(Dataset):
         self.dataset_keys = None
         self.split = 'train' if split == 0 else 'valid' if split == 1 else 'test'
         self.h5py2int = lambda x: int(np.array(x))
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.bert_model = BertModel.from_pretrained('bert-base-uncased')
 
     def __len__(self):
         f = h5py.File(self.datasetFile, 'r')
@@ -26,6 +29,7 @@ class Text2ImageDataset(Dataset):
 
         return length
 
+    @torch.no_grad()
     def __getitem__(self, idx):
         if self.dataset is None:
             self.dataset = h5py.File(self.datasetFile, mode='r')
@@ -37,6 +41,12 @@ class Text2ImageDataset(Dataset):
         # pdb.set_trace()
 
         right_image = bytes(np.array(example['img']))
+        txt = np.array(example['txt']).astype(str)
+
+        input_ids = self.tokenizer(str(txt), return_tensors="pt")
+        output = self.bert_model(**input_ids)
+
+        bert_embeddings = output.pooler_output.squeeze()
         right_embed = np.array(example['embeddings'], dtype=float)
         wrong_image = bytes(np.array(self.find_wrong_image(example['class'])))
         inter_embed = np.array(self.find_inter_embed())
@@ -47,11 +57,10 @@ class Text2ImageDataset(Dataset):
         right_image = self.validate_image(right_image)
         wrong_image = self.validate_image(wrong_image)
 
-        txt = np.array(example['txt']).astype(str)
-
         sample = {
                 'right_images': torch.FloatTensor(right_image),
                 'right_embed': torch.FloatTensor(right_embed),
+                'bert_embed': torch.FloatTensor(bert_embeddings),
                 'wrong_images': torch.FloatTensor(wrong_image),
                 'inter_embed': torch.FloatTensor(inter_embed),
                 'txt': str(txt)
