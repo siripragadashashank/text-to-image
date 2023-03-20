@@ -1,5 +1,5 @@
 # Birds CUB dataset
-birds_dataset_path: 'data/cvpr2016_cub/text2image/birds.hdf5'
+birds_dataset_path: 'data/birds.hdf5'
 
 # flowers dataset
-flowers_dataset_path: 'data/cvpr2016_flowers/text2image/flowers.hdf5'
+flowers_dataset_path: 'data/flowers.hdf5'

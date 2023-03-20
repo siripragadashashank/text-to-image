@@ -11,18 +11,20 @@ from transformers import BertTokenizer, BertModel
 
 class Text2ImageDataset(Dataset):
 
-    def __init__(self, datasetFile, transform=None, split=0):
-        self.datasetFile = datasetFile
+    def __init__(self, datasetfile, transform=None, split=0, use_bert_embeddings=False):
+        self.datasetfile = datasetfile
         self.transform = transform
         self.dataset = None
         self.dataset_keys = None
         self.split = 'train' if split == 0 else 'valid' if split == 1 else 'test'
         self.h5py2int = lambda x: int(np.array(x))
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        self.bert_model = BertModel.from_pretrained('bert-base-uncased')
+        self.use_bert_embeddings = use_bert_embeddings
+        if self.use_bert_embeddings:
+            self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+            self.bert_model = BertModel.from_pretrained('bert-base-uncased')
 
     def __len__(self):
-        f = h5py.File(self.datasetFile, 'r')
+        f = h5py.File(self.datasetfile, 'r')
         self.dataset_keys = [str(k) for k in f[self.split].keys()]
         length = len(f[self.split])
         f.close()
@@ -32,7 +34,7 @@ class Text2ImageDataset(Dataset):
     @torch.no_grad()
     def __getitem__(self, idx):
         if self.dataset is None:
-            self.dataset = h5py.File(self.datasetFile, mode='r')
+            self.dataset = h5py.File(self.datasetfile, mode='r')
             self.dataset_keys = [str(k) for k in self.dataset[self.split].keys()]
 
         example_name = self.dataset_keys[idx]
@@ -42,11 +44,6 @@ class Text2ImageDataset(Dataset):
 
         right_image = bytes(np.array(example['img']))
         txt = np.array(example['txt']).astype(str)
-
-        input_ids = self.tokenizer(str(txt), return_tensors="pt")
-        output = self.bert_model(**input_ids)
-
-        bert_embeddings = output.pooler_output.squeeze()
         right_embed = np.array(example['embeddings'], dtype=float)
         wrong_image = bytes(np.array(self.find_wrong_image(example['class'])))
         inter_embed = np.array(self.find_inter_embed())
@@ -60,11 +57,16 @@ class Text2ImageDataset(Dataset):
         sample = {
                 'right_images': torch.FloatTensor(right_image),
                 'right_embed': torch.FloatTensor(right_embed),
-                'bert_embed': torch.FloatTensor(bert_embeddings),
                 'wrong_images': torch.FloatTensor(wrong_image),
                 'inter_embed': torch.FloatTensor(inter_embed),
                 'txt': str(txt)
-                 }
+        }
+
+        if self.use_bert_embeddings:
+            input_ids = self.tokenizer(str(txt), return_tensors="pt")
+            output = self.bert_model(**input_ids)
+            bert_embeddings = output.pooler_output.squeeze()
+            sample['bert_embed'] = torch.FloatTensor(bert_embeddings)
 
         sample['right_images'] = sample['right_images'].sub_(127.5).div_(127.5)
         sample['wrong_images'] = sample['wrong_images'].sub_(127.5).div_(127.5)
